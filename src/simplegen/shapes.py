@@ -67,9 +67,7 @@ class Face:
             str: ply representation of the face
         """
         idxs = self.idxs
-        return ("{} " * (len(idxs) + 1)).format(
-            len(idxs), *[idx + offset for idx in idxs]
-        ) + "\n"
+        return ("{} " * (len(idxs) + 1)).format(len(idxs), *[idx + offset for idx in idxs]) + "\n"
 
     def __repr__(self) -> str:
         return "Face(idxs={})".format(self._vertex_idxs)
@@ -82,9 +80,7 @@ class ShapeTypes(Enum):
 class Shape(ABC):
     DONT_VISUALIZE = "DONT_VISUALIZE"
 
-    def __init__(
-        self, name: str, shape_name: ShapeTypes, visualize: bool = True
-    ) -> None:
+    def __init__(self, name: str, shape_name: ShapeTypes, visualize: bool = True) -> None:
         """Initialize shape with its name
 
         Args:
@@ -227,13 +223,9 @@ class Box(Shape):
         return Marker.CUBE
 
     def generate_xml(self) -> Element:
-        model = Element(
-            "model", name=self.name + ("" if self.visualize else self.DONT_VISUALIZE)
-        )
+        model = Element("model", name=self.name + ("" if self.visualize else self.DONT_VISUALIZE))
         xml_set_value(model, "static", "true")
-        xml_set_value(
-            model, "pose", "{} {} {} 0 0 0".format(self.x_pos, self.y_pos, self.z_pos)
-        )
+        xml_set_value(model, "pose", "{} {} {} 0 0 0".format(self.x_pos, self.y_pos, self.z_pos))
         link = SubElement(model, "link", name="link")
         size = "{} {} {}".format(self.x_size, self.y_size, self.z_size)
         xml_set_value(
@@ -242,9 +234,7 @@ class Box(Shape):
             size,
             values={"collision": "collision"},
         )
-        xml_set_value(
-            link, "visual/geometry/box/size", size, values={"visual": "visual"}
-        )
+        xml_set_value(link, "visual/geometry/box/size", size, values={"visual": "visual"})
         return model
 
     def get_vertices(self) -> List[Vertex]:

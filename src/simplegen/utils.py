@@ -2,6 +2,7 @@ import lxml.etree as ET
 
 from typing import Dict
 
+
 def xml_set_value(
     elem: ET.SubElement,
     path: str,
