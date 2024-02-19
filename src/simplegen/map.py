@@ -1,8 +1,13 @@
 import os
+import time
+import rospy
+
 import lxml.etree as ET
 from shapes import Shape, Box, ShapeTypes
 
 from typing import List
+
+from visualization_msgs.msg import Marker, MarkerArray
 
 from abc import ABC, abstractmethod
 
@@ -136,7 +141,45 @@ class Map(ABC):
 
     def rviz_visualize(self) -> None:
         """Visualize the map in rviz"""
-        pass
+
+        # Initialize ros node
+        rospy.init_node("simplegen_rviz_visualizer")
+
+        # Create marker publisher
+        marker_publisher = rospy.Publisher("markers", MarkerArray, queue_size=1)
+
+        # Delete all markers
+        self._delete_all_markers(marker_publisher)
+        time.sleep(0.2)
+
+        # Publish new markers
+        self._publish_rviz_markers(marker_publisher)
+        time.sleep(0.2)
+
+    def _delete_all_markers(self, marker_publisher: rospy.Publisher) -> None:
+        """Delete all markers in rviz
+
+        Args:
+            marker_publisher (rospy.Publisher): ROS publisher of MarkerArray message
+        """
+        delete_all_marker = Marker()
+        delete_all_marker.header.frame_id = "map"
+        delete_all_marker.action = Marker.DELETEALL
+        markers = MarkerArray()
+        markers.markers.append(delete_all_marker)
+        marker_publisher.publish(markers)
+
+    def _publish_rviz_markers(self, marker_publisher: rospy.Publisher) -> None:
+        """Publish markers to rviz
+
+        Args:
+            marker_publisher (rospy.Publisher): ROS publisher of MarkerArray message
+        """
+        markers = MarkerArray()
+        stamp = rospy.Time.now()
+        for i, shape in enumerate(self.map_generator.shapes):
+            markers.markers.append(shape.get_marker(world_frame="map", idx=i, stamp=stamp))
+        marker_publisher.publish(markers)
 
 
 class MapReader:
