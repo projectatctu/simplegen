@@ -2,8 +2,9 @@ import os
 import time
 import rospy
 
+
 import lxml.etree as ET
-from shapes import Shape, Box, ShapeTypes
+from .shapes import Shape, Box, ShapeTypes
 
 from typing import List
 
@@ -100,7 +101,16 @@ class Map(ABC):
             description (str): map description
         """
         self.description = description
+        self.map_generator: MapGenerator = None
+
+    def setup(self) -> "Map":
+        """Setup map generator
+
+        Returns:
+            Map: self
+        """
         self.map_generator = self.setup_map()
+        return self
 
     @abstractmethod
     def setup_map(self) -> MapGenerator:
@@ -140,21 +150,31 @@ class Map(ABC):
         self.map_generator.generate_ply(filename)
 
     def rviz_visualize(self) -> None:
-        """Visualize the map in rviz"""
+        """Visualize map in rviz"""
+
+        print("Initializing rviz visualization")
 
         # Initialize ros node
         rospy.init_node("simplegen_rviz_visualizer")
+        
+        print("ROS node initialized")
 
         # Create marker publisher
-        marker_publisher = rospy.Publisher("markers", MarkerArray, queue_size=1)
+        marker_publisher = rospy.Publisher("markers", MarkerArray, queue_size=1, latch=True)
+        
+        print("Marker publisher created")
 
         # Delete all markers
         self._delete_all_markers(marker_publisher)
         time.sleep(0.2)
+        
+        print("All markers deleted")
 
         # Publish new markers
         self._publish_rviz_markers(marker_publisher)
-        time.sleep(0.2)
+        time.sleep(0.5)
+        
+        print("New markers published")
 
     def _delete_all_markers(self, marker_publisher: rospy.Publisher) -> None:
         """Delete all markers in rviz
@@ -178,8 +198,11 @@ class Map(ABC):
         markers = MarkerArray()
         stamp = rospy.Time.now()
         for i, shape in enumerate(self.map_generator.shapes):
-            markers.markers.append(shape.get_marker(world_frame="map", idx=i, stamp=stamp))
+            markers.markers.append(shape.get_marker(world_frame="map", id=i, stamp=stamp))
         marker_publisher.publish(markers)
+
+    def __repr__(self) -> str:
+        return f"Map: {self.description}"
 
 
 class MapReader:

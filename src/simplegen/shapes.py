@@ -6,7 +6,7 @@ from lxml.etree import Element, SubElement
 import rospy
 from visualization_msgs.msg import Marker
 
-from utils import xml_set_value
+from .utils import xml_set_value
 
 from typing import List
 

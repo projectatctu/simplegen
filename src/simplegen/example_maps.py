@@ -1,5 +1,5 @@
-from map import Map, MapGenerator
-from shapes import Box
+from .map import Map, MapGenerator
+from .shapes import Box
 
 
 class ExampleMap(Map):
@@ -26,7 +26,7 @@ class StairsMap(ExampleMap):
         super().__init__("Stairs")
         self.n_stairs = n_stairs
 
-    def get_map(self) -> MapGenerator:
+    def setup_map(self) -> MapGenerator:
         map = MapGenerator()
 
         # add floor
@@ -48,3 +48,8 @@ class StairsMap(ExampleMap):
             map.add_shape(b)
 
         return map
+
+
+AVAILABLE_MAPS = {
+    "StairsMap": StairsMap,
+}
