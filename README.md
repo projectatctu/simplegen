@@ -15,3 +15,5 @@ pip3 install -e ".[dev]"
 ```bash
 simplegen --help
 ```
+
+ <video loop src="assets/usage.mp4">usage</video> 

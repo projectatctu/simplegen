@@ -152,29 +152,19 @@ class Map(ABC):
     def rviz_visualize(self) -> None:
         """Visualize map in rviz"""
 
-        print("Initializing rviz visualization")
-
         # Initialize ros node
         rospy.init_node("simplegen_rviz_visualizer")
-        
-        print("ROS node initialized")
 
         # Create marker publisher
         marker_publisher = rospy.Publisher("markers", MarkerArray, queue_size=1, latch=True)
-        
-        print("Marker publisher created")
 
         # Delete all markers
         self._delete_all_markers(marker_publisher)
-        time.sleep(0.2)
-        
-        print("All markers deleted")
+        time.sleep(1.0)
 
         # Publish new markers
         self._publish_rviz_markers(marker_publisher)
         time.sleep(0.5)
-        
-        print("New markers published")
 
     def _delete_all_markers(self, marker_publisher: rospy.Publisher) -> None:
         """Delete all markers in rviz
@@ -198,6 +188,8 @@ class Map(ABC):
         markers = MarkerArray()
         stamp = rospy.Time.now()
         for i, shape in enumerate(self.map_generator.shapes):
+            if shape.visualize is False:
+                continue
             markers.markers.append(shape.get_marker(world_frame="map", id=i, stamp=stamp))
         marker_publisher.publish(markers)
 
