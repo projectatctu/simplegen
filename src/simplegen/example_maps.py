@@ -1,25 +1,15 @@
-from abc import ABC, abstractmethod
-from map import MapGenerator
+from map import Map, MapGenerator
 from shapes import Box
 
 
-class ExampleMap(ABC):
+class ExampleMap(Map):
     def __init__(self, description: str) -> None:
         """Initialize example map with a description
 
         Args:
             description (str): map description
         """
-        self.description = description
-
-    @abstractmethod
-    def get_map(self) -> MapGenerator:
-        """Prepare map and return a map generator
-
-        Returns:
-            MapGenerator: map generator
-        """
-        pass
+        super().__init__(description)
 
     def _add_floor(self, map: MapGenerator) -> None:
         """Add a floor to the map
