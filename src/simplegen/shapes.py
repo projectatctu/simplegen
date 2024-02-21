@@ -201,6 +201,7 @@ class Box(Shape):
         roll: float = 0.0,
         pitch: float = 0.0,
         yaw: float = 0.0,
+        static: bool = True,
         visualize: bool = True,
     ) -> None:
         """Initialize a box with its position and size
@@ -216,6 +217,7 @@ class Box(Shape):
             roll (float, optional): roll angle. Defaults to 0.0.
             pitch (float, optional): pitch angle. Defaults to 0.0.
             yaw (float, optional): yaw angle. Defaults to 0.0.
+            static (bool, optional): Whether the box is static. Defaults to True.
             visualize (bool, optional): Whether to visualize the box. Defaults to True.
         """
         super().__init__(name, self.__class__.TYPE, visualize=visualize)
@@ -228,6 +230,7 @@ class Box(Shape):
         self.roll = roll
         self.pitch = pitch
         self.yaw = yaw
+        self.static = static
 
     @property
     def marker_type(self) -> int:
@@ -235,7 +238,7 @@ class Box(Shape):
 
     def generate_xml(self) -> Element:
         model = Element("model", name=self.name + ("" if self.visualize else self.DONT_VISUALIZE))
-        xml_set_value(model, "static", "true")
+        xml_set_value(model, "static", "true" if self.static else "false")
         xml_set_value(
             model,
             "pose",
