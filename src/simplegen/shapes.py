@@ -236,7 +236,11 @@ class Box(Shape):
     def generate_xml(self) -> Element:
         model = Element("model", name=self.name + ("" if self.visualize else self.DONT_VISUALIZE))
         xml_set_value(model, "static", "true")
-        xml_set_value(model, "pose", "{} {} {} 0 0 0".format(self.x_pos, self.y_pos, self.z_pos))
+        xml_set_value(
+            model,
+            "pose",
+            "{} {} {} {} {} {}".format(self.x_pos, self.y_pos, self.z_pos, self.roll, self.pitch, self.yaw),
+        )
         link = SubElement(model, "link", name="link")
         size = "{} {} {}".format(self.x_size, self.y_size, self.z_size)
         xml_set_value(
@@ -256,11 +260,15 @@ class Box(Shape):
         """
 
         def _get_vertex(xmult: float, ymult: float, zmult: float) -> Vertex:
-            return Vertex(
-                self.x_pos + xmult * self.x_size / 2,
-                self.y_pos + ymult * self.y_size / 2,
-                self.z_pos + zmult * self.z_size / 2,
+            position_local = np.array(
+                [
+                    xmult * self.x_size / 2,
+                    ymult * self.y_size / 2,
+                    zmult * self.z_size / 2,
+                ]
             )
+            position_global = self._rotation_matrix @ position_local + np.array([self.x_pos, self.y_pos, self.z_pos])
+            return Vertex(*position_global)
 
         return [
             _get_vertex(-1.0, -1.0, -1.0),
@@ -312,10 +320,11 @@ class Box(Shape):
         marker.pose.position.x = self.x_pos
         marker.pose.position.y = self.y_pos
         marker.pose.position.z = self.z_pos
-        marker.pose.orientation.x = 0.0
-        marker.pose.orientation.y = 0.0
-        marker.pose.orientation.z = 0.0
-        marker.pose.orientation.w = 1.0
+        quat = self._quaternion
+        marker.pose.orientation.x = quat[0]
+        marker.pose.orientation.y = quat[1]
+        marker.pose.orientation.z = quat[2]
+        marker.pose.orientation.w = quat[3]
         marker.scale.x = self.x_size
         marker.scale.y = self.y_size
         marker.scale.z = self.z_size
@@ -324,7 +333,7 @@ class Box(Shape):
         marker.color.g = 1.0
         marker.color.b = 0.0
         return marker
-    
+
     @property
     def _rotation(self) -> Rotation:
         """Return a scipy representation of the box's orientation
@@ -332,15 +341,15 @@ class Box(Shape):
         Returns:
             Rotation: box rotation
         """
-        return Rotation("zyx", [self.roll, self.pitch, self.yaw], degrees=False)
-    
+        return Rotation.from_euler("ZYX", [self.yaw, self.pitch, self.roll], degrees=False)  # ZYX - intrinsic rotation
+
     @property
     def _rotation_matrix(self) -> np.ndarray:
         """Return the rotation matrix for the box
-        
+
         Returns:
             np.ndarray: rotation matrix with shape (3, 3)
-        """ 
+        """
         return self._rotation.as_matrix()
 
     @property

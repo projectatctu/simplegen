@@ -25,26 +25,29 @@ class ExampleMap(Map):
 
 
 class TestMap(ExampleMap):
-    def __init__(self, r: float, p: float, y: float) -> None:
-        """Generate a simple world with only a single box with the specified orientation
-
-        Args:
-            r (float): Box roll
-            p (float): Box pitch
-            y (float): Box yaw
-        """
-        self.r = r
-        self.p = p
-        self.y = y
+    def __init__(self) -> None:
+        super().__init__("Test map")
 
     def setup_map(self) -> MapGenerator:
         map = MapGenerator()
 
-        # add box
-        box = Box("box", *[0, 0, 0.5], *[0.5, 0.5, 0.5], *[self.r, self.p, self.y], visualize=True)
-        map.add_shape(box)
+        # Add floor
+        self._add_floor(map)
+
+        # First step
+        step1 = Box("step1", *[0, 0, 0.1], *[1.5, 1.5, 0.2], visualize=True)
+        map.add_shape(step1)
+
+        # Second step - tilted box
+        step2 = Box("step2", *[-1.2, 0, 0.3], *[1.5, 1.5, 0.2], *[0, 0.3, 0], visualize=True)
+        map.add_shape(step2)
+
+        # Third step
+        step3 = Box("step3", *[-2.63, 0, 0.52], *[1.5, 1.5, 0.2], visualize=True)
+        map.add_shape(step3)
 
         return map
+
 
 class StairsMap(ExampleMap):
     def __init__(self, n_stairs: int = 10) -> None:
@@ -74,35 +77,37 @@ class StairsMap(ExampleMap):
             map.add_shape(b)
 
         return map
-    
+
+
 class RandomBlocksMap(ExampleMap):
     def __init__(self, n_blocks: int = 10) -> None:
         super().__init__("Random blocks")
-        self.n_blocks = n_blocks 
+        self.n_blocks = n_blocks
 
     def setup_map(self) -> MapGenerator:
         map = MapGenerator()
-        
+
         BLOCK_HEIGHT = 0.3
         BLOCK_DEPTH = 1.0
         BLOCK_WIDTH = 1.0
-        
+
         self._add_floor(map)
 
         for i in range(self.n_blocks):
             d = random.uniform(0, BLOCK_DEPTH)
             w = random.uniform(0, BLOCK_WIDTH)
             h = random.uniform(0, BLOCK_HEIGHT)
-            
+
             x = random.uniform(-2, 2)
             y = random.uniform(-2, 2)
-            z = h/2
+            z = h / 2
             p = [x, y, z]
             s = [d, w, h]
             b = Box("b{}".format(i), *p, *s)
             map.add_shape(b)
 
         return map
+
 
 AVAILABLE_MAPS = {
     "StairsMap": StairsMap,
