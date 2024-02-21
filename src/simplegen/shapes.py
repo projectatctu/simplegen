@@ -517,10 +517,10 @@ class Ball(Shape):
         static: bool = True,
         visualize: bool = True,
     ):
-        """Initialize a cylinder with its position and size
+        """Initialize a ball with its position and size
 
         Args:
-            name (str): Cylinder name
+            name (str): Ball name
             x_pos (float): x center coordinate of the center of the ball
             y_pos (float): y center coordinate of the center of the ball
             z_pos (float): z center coordinate of the center of the ball
@@ -557,20 +557,20 @@ class Ball(Shape):
         return model
 
     def get_vertices(self) -> List[Vertex]:
-        """Return the vertices of the cylinder
+        """Return the vertices of the ball
 
         Returns:
             List[Vertex]: list of vertices
         """
-        raise NotImplementedError("Cylinder mesh generation not implemented")
+        raise NotImplementedError("Ball mesh generation not implemented")
 
     def get_faces(self) -> List[Face]:
-        """Return faces of the cylinder defining its mesh
+        """Return faces of the ball defining its mesh
 
         Returns:
             List[Face]: List of faces
         """
-        raise NotImplementedError("Cylinder mesh generation not implemented")
+        raise NotImplementedError("Ball mesh generation not implemented")
 
     @property
     def n_vertices(self) -> int:
