@@ -1,12 +1,12 @@
 import lxml.etree as ET
 
-from typing import Dict
+from typing import Dict, Union
 
 
 def xml_set_value(
     elem: ET.SubElement,
     path: str,
-    text: str,
+    text: Union[Dict[str, str], str],
     values: Dict[str, str] = {},
 ) -> None:
     assert len(path) != 0
@@ -22,4 +22,11 @@ def xml_set_value(
             el = ET.SubElement(el, subelements[i], name=values[subelements[0]])
         else:
             el = ET.SubElement(el, subelements[i])
-    el.text = text
+
+    if isinstance(text, str):
+        el.text = text
+
+    if isinstance(text, dict):
+        for key, t in text.items():
+            k = ET.SubElement(el, key)
+            k.text = t

@@ -1,7 +1,7 @@
 import random
 
 from .map import Map, MapGenerator
-from .shapes import Box
+from .shapes import Box, Cylinder, Ball
 
 
 class ExampleMap(Map):
@@ -45,6 +45,14 @@ class TestMap(ExampleMap):
         # Third step
         step3 = Box("step3", *[-2.63, 0, 0.52], *[1.5, 1.5, 0.2], visualize=True)
         map.add_shape(step3)
+
+        # Cylinder
+        cylinder = Cylinder("cylinder", *[-2.63, 0, 0.52], 0.2, 0.4, visualize=True)
+        map.add_shape(cylinder)
+
+        # Sphere
+        ball = Ball("ball", *[-2.63, 0, 1.52], 0.2, visualize=True, static=False)
+        map.add_shape(ball)
 
         return map
 

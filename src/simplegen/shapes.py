@@ -77,6 +77,8 @@ class Face:
 
 class ShapeTypes(Enum):
     BOX = 1
+    CYLINDER = 2
+    BALL = 3
 
 
 class Shape(ABC):
@@ -281,7 +283,6 @@ class Box(Shape):
         self.x_size = x_size
         self.y_size = y_size
         self.z_size = z_size
-        self.static = static
 
     @property
     def marker_type(self) -> int:
@@ -382,6 +383,216 @@ class Box(Shape):
         marker.scale.x = self.x_size
         marker.scale.y = self.y_size
         marker.scale.z = self.z_size
+        marker.color.a = 1.0
+        marker.color.r = self.STATIC_COLOR[0] / 255 if self.static else self.NONSTATIC_COLOR[0] / 255
+        marker.color.g = self.STATIC_COLOR[1] / 255 if self.static else self.NONSTATIC_COLOR[1] / 255
+        marker.color.b = self.STATIC_COLOR[2] / 255 if self.static else self.NONSTATIC_COLOR[2] / 255
+        return marker
+
+
+class Cylinder(Shape):
+    TYPE = ShapeTypes.CYLINDER
+    N_VERTICES = 0  # TODO(lnotspotl): Implement mesh generation
+    N_FACES = 0
+
+    def __init__(
+        self,
+        name: str,
+        x_pos: float,
+        y_pos: float,
+        z_pos: float,
+        diameter: float,
+        length: float,
+        roll: float = 0.0,
+        pitch: float = 0.0,
+        yaw: float = 0.0,
+        static: bool = True,
+        visualize: bool = True,
+    ):
+        """Initialize a cylinder with its position and size
+
+        Args:
+            name (str): Cylinder name
+            x_pos (float): x coordinate of the center of the cylinder
+            y_pos (float): y coordinate of the center of the cylinder
+            z_pos (float): z coordinate of the center of the cylinder
+            diameter (float): cylinder's diameter
+            length (float): cylinder's length
+            roll (float, optional): roll angle. Defaults to 0.0.
+            pitch (float, optional): pitch angle. Defaults to 0.0.
+            yaw (float, optional): yaw angle. Defaults to 0.0.
+            static (bool, optional): _description_. Defaults to True.
+            visualize (bool, optional): _description_. Defaults to True.
+        """
+        super().__init__(
+            name, self.__class__.TYPE, x_pos, y_pos, z_pos, roll, pitch, yaw, static=static, visualize=visualize
+        )
+        self.diameter = diameter
+        self.length = length
+
+    @property
+    def marker_type(self) -> int:
+        return Marker.CYLINDER
+
+    def generate_xml(self) -> Element:
+        model = Element("model", name=self.name + ("" if self.visualize else self.DONT_VISUALIZE))
+        parameters = {"radius": str(self.diameter / 2), "length": str(self.length)}
+        xml_set_value(model, "static", "true" if self.static else "false")
+        xml_set_value(
+            model,
+            "pose",
+            "{} {} {} {} {} {}".format(self.x_pos, self.y_pos, self.z_pos, self.roll, self.pitch, self.yaw),
+        )
+        link = SubElement(model, "link", name="link")
+        xml_set_value(
+            link,
+            "collision/geometry/cylinder",
+            parameters,
+            values={"collision": "collision"},
+        )
+        xml_set_value(link, "visual/geometry/cylinder", parameters, values={"visual": "visual"})
+        return model
+
+    def get_vertices(self) -> List[Vertex]:
+        """Return the vertices of the cylinder
+
+        Returns:
+            List[Vertex]: list of vertices
+        """
+        raise NotImplementedError("Cylinder mesh generation not implemented")
+
+    def get_faces(self) -> List[Face]:
+        """Return faces of the cylinder defining its mesh
+
+        Returns:
+            List[Face]: List of faces
+        """
+        raise NotImplementedError("Cylinder mesh generation not implemented")
+
+    @property
+    def n_vertices(self) -> int:
+        return self.N_VERTICES
+
+    @property
+    def n_faces(self) -> int:
+        return self.N_FACES
+
+    def get_marker(self, world_frame: str, id: int, stamp: rospy.Time) -> Marker:
+        marker = Marker()
+        marker.header.frame_id = world_frame
+        marker.header.stamp = stamp
+        marker.id = id
+        marker.type = self.marker_type
+        marker.action = Marker.ADD
+        marker.pose.position.x = self.x_pos
+        marker.pose.position.y = self.y_pos
+        marker.pose.position.z = self.z_pos
+        quat = self._quaternion
+        marker.pose.orientation.x = quat[0]
+        marker.pose.orientation.y = quat[1]
+        marker.pose.orientation.z = quat[2]
+        marker.pose.orientation.w = quat[3]
+        marker.scale.x = self.diameter
+        marker.scale.y = self.diameter
+        marker.scale.z = self.length
+        marker.color.a = 1.0
+        marker.color.r = self.STATIC_COLOR[0] / 255 if self.static else self.NONSTATIC_COLOR[0] / 255
+        marker.color.g = self.STATIC_COLOR[1] / 255 if self.static else self.NONSTATIC_COLOR[1] / 255
+        marker.color.b = self.STATIC_COLOR[2] / 255 if self.static else self.NONSTATIC_COLOR[2] / 255
+        return marker
+
+
+class Ball(Shape):
+    TYPE = ShapeTypes.BALL
+    N_VERTICES = 0  # TODO(lnotspotl): Implement mesh generation
+    N_FACES = 0
+
+    def __init__(
+        self,
+        name: str,
+        x_pos: float,
+        y_pos: float,
+        z_pos: float,
+        radius: float,
+        static: bool = True,
+        visualize: bool = True,
+    ):
+        """Initialize a cylinder with its position and size
+
+        Args:
+            name (str): Cylinder name
+            x_pos (float): x center coordinate of the center of the ball
+            y_pos (float): y center coordinate of the center of the ball
+            z_pos (float): z center coordinate of the center of the ball
+            raidus (float): ball's radius
+            static (bool, optional): _description_. Defaults to True.
+            visualize (bool, optional): _description_. Defaults to True.
+        """
+        roll, pitch, yaw = [0] * 3  # for consistency with other shapes
+        super().__init__(
+            name, self.__class__.TYPE, x_pos, y_pos, z_pos, roll, pitch, yaw, static=static, visualize=visualize
+        )
+        self.radius = radius
+
+    @property
+    def marker_type(self) -> int:
+        return Marker.SPHERE
+
+    def generate_xml(self) -> Element:
+        model = Element("model", name=self.name + ("" if self.visualize else self.DONT_VISUALIZE))
+        xml_set_value(model, "static", "true" if self.static else "false")
+        xml_set_value(
+            model,
+            "pose",
+            "{} {} {} {} {} {}".format(self.x_pos, self.y_pos, self.z_pos, self.roll, self.pitch, self.yaw),
+        )
+        link = SubElement(model, "link", name="link")
+        xml_set_value(
+            link,
+            "collision/geometry/sphere/radius",
+            str(self.radius),
+            values={"collision": "collision"},
+        )
+        xml_set_value(link, "visual/geometry/sphere/radius", str(self.radius), values={"visual": "visual"})
+        return model
+
+    def get_vertices(self) -> List[Vertex]:
+        """Return the vertices of the cylinder
+
+        Returns:
+            List[Vertex]: list of vertices
+        """
+        raise NotImplementedError("Cylinder mesh generation not implemented")
+
+    def get_faces(self) -> List[Face]:
+        """Return faces of the cylinder defining its mesh
+
+        Returns:
+            List[Face]: List of faces
+        """
+        raise NotImplementedError("Cylinder mesh generation not implemented")
+
+    @property
+    def n_vertices(self) -> int:
+        return self.N_VERTICES
+
+    @property
+    def n_faces(self) -> int:
+        return self.N_FACES
+
+    def get_marker(self, world_frame: str, id: int, stamp: rospy.Time) -> Marker:
+        marker = Marker()
+        marker.header.frame_id = world_frame
+        marker.header.stamp = stamp
+        marker.id = id
+        marker.type = self.marker_type
+        marker.action = Marker.ADD
+        marker.pose.position.x = self.x_pos
+        marker.pose.position.y = self.y_pos
+        marker.pose.position.z = self.z_pos
+        marker.scale.x = self.radius * 2  # diameter
+        marker.scale.y = self.radius * 2
+        marker.scale.z = self.radius * 2
         marker.color.a = 1.0
         marker.color.r = self.STATIC_COLOR[0] / 255 if self.static else self.NONSTATIC_COLOR[0] / 255
         marker.color.g = self.STATIC_COLOR[1] / 255 if self.static else self.NONSTATIC_COLOR[1] / 255
