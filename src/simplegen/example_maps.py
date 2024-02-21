@@ -73,7 +73,7 @@ class StairsMap(ExampleMap):
                 add = 1.0
             p = [X_OFFSET + i * STAIRS_DEPTH + add / 2, 0, i * STAIRS_HEIGHT + STAIRS_HEIGHT / 2]
             s = [(STAIRS_DEPTH + add), STAIRS_WIDTH, STAIRS_HEIGHT]
-            b = Box("s{}".format(i), *p, *s)
+            b = Box("s{}".format(i), *p, *s, static=i != (self.n_stairs - 1))
             map.add_shape(b)
 
         return map

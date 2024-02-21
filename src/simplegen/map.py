@@ -237,9 +237,11 @@ class MapReader:
             visualize = not name.endswith(Shape.DONT_VISUALIZE)
             if not visualize:
                 name = name[: -len(Shape.DONT_VISUALIZE)]
-            position = list(map(float, model.find("pose").text.split()[:3]))
+            pose = list(map(float, model.find("pose").text.split()))
+            position, orientation = pose[:3], pose[3:]
+            static = model.find("static").text.strip().lower() == "true"
             size = list(map(float, model.find("link/collision/geometry/box/size").text.split()))
-            box = Box(name, *position, *size, visualize=visualize)
+            box = Box(name, *position, *size, *orientation, static=static, visualize=visualize)
             boxes.append(box)
         return boxes
 

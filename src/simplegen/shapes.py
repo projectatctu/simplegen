@@ -81,6 +81,8 @@ class ShapeTypes(Enum):
 
 class Shape(ABC):
     DONT_VISUALIZE = "DONT_VISUALIZE"
+    STATIC_COLOR = (235, 126, 59)  # rgb, orange
+    NONSTATIC_COLOR = (29, 113, 181)  # rgb, blue
 
     def __init__(self, name: str, shape_name: ShapeTypes, visualize: bool = True) -> None:
         """Initialize shape with its name
@@ -332,9 +334,9 @@ class Box(Shape):
         marker.scale.y = self.y_size
         marker.scale.z = self.z_size
         marker.color.a = 1.0
-        marker.color.r = 1.0
-        marker.color.g = 1.0
-        marker.color.b = 0.0
+        marker.color.r = self.STATIC_COLOR[0] / 255 if self.static else self.NONSTATIC_COLOR[0] / 255
+        marker.color.g = self.STATIC_COLOR[1] / 255 if self.static else self.NONSTATIC_COLOR[1] / 255
+        marker.color.b = self.STATIC_COLOR[2] / 255 if self.static else self.NONSTATIC_COLOR[2] / 255
         return marker
 
     @property
