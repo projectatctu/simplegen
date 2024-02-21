@@ -3,6 +3,8 @@ from enum import Enum
 from abc import ABC, abstractmethod
 from lxml.etree import Element, SubElement
 
+from scipy.spatial.transform import Rotation
+
 import rospy
 from visualization_msgs.msg import Marker
 
@@ -196,6 +198,9 @@ class Box(Shape):
         x_size: float,
         y_size: float,
         z_size: float,
+        roll: float = 0.0,
+        pitch: float = 0.0,
+        yaw: float = 0.0,
         visualize: bool = True,
     ) -> None:
         """Initialize a box with its position and size
@@ -208,6 +213,9 @@ class Box(Shape):
             x_size (float): box size in x direction
             y_size (float): box size in y direction
             z_size (float): box size in z direction
+            roll (float, optional): roll angle. Defaults to 0.0.
+            pitch (float, optional): pitch angle. Defaults to 0.0.
+            yaw (float, optional): yaw angle. Defaults to 0.0.
             visualize (bool, optional): Whether to visualize the box. Defaults to True.
         """
         super().__init__(name, self.__class__.TYPE, visualize=visualize)
@@ -217,6 +225,9 @@ class Box(Shape):
         self.x_size = x_size
         self.y_size = y_size
         self.z_size = z_size
+        self.roll = roll
+        self.pitch = pitch
+        self.yaw = yaw
 
     @property
     def marker_type(self) -> int:
@@ -313,3 +324,30 @@ class Box(Shape):
         marker.color.g = 1.0
         marker.color.b = 0.0
         return marker
+    
+    @property
+    def _rotation(self) -> Rotation:
+        """Return a scipy representation of the box's orientation
+
+        Returns:
+            Rotation: box rotation
+        """
+        return Rotation("zyx", [self.roll, self.pitch, self.yaw], degrees=False)
+    
+    @property
+    def _rotation_matrix(self) -> np.ndarray:
+        """Return the rotation matrix for the box
+        
+        Returns:
+            np.ndarray: rotation matrix with shape (3, 3)
+        """ 
+        return self._rotation.as_matrix()
+
+    @property
+    def _quaternion(self) -> np.ndarray:
+        """Return the quaternion for the box
+
+        Returns:
+            np.ndarray: quaternion with shape (4,) - (x,y,z,w)
+        """
+        return self._rotation.as_quat()

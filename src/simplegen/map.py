@@ -128,7 +128,7 @@ class Map(ABC):
             filename (str): file path
         """
         path, _ = os.path.split(filename)
-        if not os.path.exists(path):
+        if path != "" and not os.path.exists(path):
             os.makedirs(path)
 
     def save_map(self, filename: str) -> None:

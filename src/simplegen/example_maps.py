@@ -24,6 +24,28 @@ class ExampleMap(Map):
         map.add_shape(floor)
 
 
+class TestMap(ExampleMap):
+    def __init__(self, r: float, p: float, y: float) -> None:
+        """Generate a simple world with only a single box with the specified orientation
+
+        Args:
+            r (float): Box roll
+            p (float): Box pitch
+            y (float): Box yaw
+        """
+        self.r = r
+        self.p = p
+        self.y = y
+
+    def setup_map(self) -> MapGenerator:
+        map = MapGenerator()
+
+        # add box
+        box = Box("box", *[0, 0, 0.5], *[0.5, 0.5, 0.5], *[self.r, self.p, self.y], visualize=True)
+        map.add_shape(box)
+
+        return map
+
 class StairsMap(ExampleMap):
     def __init__(self, n_stairs: int = 10) -> None:
         super().__init__("Stairs")
@@ -85,4 +107,5 @@ class RandomBlocksMap(ExampleMap):
 AVAILABLE_MAPS = {
     "StairsMap": StairsMap,
     "RandomBlocksMap": RandomBlocksMap,
+    "TestMap": TestMap,
 }
