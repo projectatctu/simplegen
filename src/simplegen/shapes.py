@@ -84,16 +84,42 @@ class Shape(ABC):
     STATIC_COLOR = (235, 126, 59)  # rgb, orange
     NONSTATIC_COLOR = (29, 113, 181)  # rgb, blue
 
-    def __init__(self, name: str, shape_name: ShapeTypes, visualize: bool = True) -> None:
+    def __init__(
+        self,
+        name: str,
+        shape_name: ShapeTypes,
+        x_pos: float,
+        y_pos: float,
+        z_pos: float,
+        roll: float = 0.0,
+        pitch: float = 0.0,
+        yaw: float = 0.0,
+        static: bool = True,
+        visualize: bool = True,
+    ) -> None:
         """Initialize shape with its name
 
         Args:
             name (str): Name
             shape_name (ShapeTypes): Shape type
+            x_pos (float): x coordinate of the center of the shape
+            y_pos (float): y coordinate of the center of the shape
+            z_pos (float): z coordinate of the center of the shape
+            roll (float, optional): roll angle. Defaults to 0.0.
+            pitch (float, optional): pitch angle. Defaults to 0.0.
+            yaw (float, optional): yaw angle. Defaults to 0.0.
+            static (bool, optional): Whether the shape is static. Defaults to True.
             visualize (bool, optional): Whether to visualize the shape. Defaults to True.
         """
         self._name = name
         self._shape_name = shape_name
+        self.x_pos = x_pos
+        self.y_pos = y_pos
+        self.z_pos = z_pos
+        self.roll = roll
+        self.pitch = pitch
+        self.yaw = yaw
+        self.static = static
         self.visualize = visualize
 
     @property
@@ -185,6 +211,33 @@ class Shape(ABC):
         """
         pass
 
+    @property
+    def _rotation(self) -> Rotation:
+        """Return a scipy representation of the box's orientation
+
+        Returns:
+            Rotation: box rotation
+        """
+        return Rotation.from_euler("ZYX", [self.yaw, self.pitch, self.roll], degrees=False)  # ZYX - intrinsic rotation
+
+    @property
+    def _rotation_matrix(self) -> np.ndarray:
+        """Return the rotation matrix for the box
+
+        Returns:
+            np.ndarray: rotation matrix with shape (3, 3)
+        """
+        return self._rotation.as_matrix()
+
+    @property
+    def _quaternion(self) -> np.ndarray:
+        """Return the quaternion for the box
+
+        Returns:
+            np.ndarray: quaternion with shape (4,) - (x,y,z,w)
+        """
+        return self._rotation.as_quat()
+
 
 class Box(Shape):
     TYPE = ShapeTypes.BOX
@@ -222,16 +275,12 @@ class Box(Shape):
             static (bool, optional): Whether the box is static. Defaults to True.
             visualize (bool, optional): Whether to visualize the box. Defaults to True.
         """
-        super().__init__(name, self.__class__.TYPE, visualize=visualize)
-        self.x_pos = x_pos
-        self.y_pos = y_pos
-        self.z_pos = z_pos
+        super().__init__(
+            name, self.__class__.TYPE, x_pos, y_pos, z_pos, roll, pitch, yaw, static=static, visualize=visualize
+        )
         self.x_size = x_size
         self.y_size = y_size
         self.z_size = z_size
-        self.roll = roll
-        self.pitch = pitch
-        self.yaw = yaw
         self.static = static
 
     @property
@@ -338,30 +387,3 @@ class Box(Shape):
         marker.color.g = self.STATIC_COLOR[1] / 255 if self.static else self.NONSTATIC_COLOR[1] / 255
         marker.color.b = self.STATIC_COLOR[2] / 255 if self.static else self.NONSTATIC_COLOR[2] / 255
         return marker
-
-    @property
-    def _rotation(self) -> Rotation:
-        """Return a scipy representation of the box's orientation
-
-        Returns:
-            Rotation: box rotation
-        """
-        return Rotation.from_euler("ZYX", [self.yaw, self.pitch, self.roll], degrees=False)  # ZYX - intrinsic rotation
-
-    @property
-    def _rotation_matrix(self) -> np.ndarray:
-        """Return the rotation matrix for the box
-
-        Returns:
-            np.ndarray: rotation matrix with shape (3, 3)
-        """
-        return self._rotation.as_matrix()
-
-    @property
-    def _quaternion(self) -> np.ndarray:
-        """Return the quaternion for the box
-
-        Returns:
-            np.ndarray: quaternion with shape (4,) - (x,y,z,w)
-        """
-        return self._rotation.as_quat()
