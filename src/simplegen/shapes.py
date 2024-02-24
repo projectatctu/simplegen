@@ -213,6 +213,22 @@ class Shape(ABC):
         """
         pass
 
+    @staticmethod
+    @abstractmethod
+    def from_marker(marker: Marker, name: str, static: bool = True, visualize: bool = True) -> "Shape":
+        """Create a shape from a marker message
+
+        Args:
+            marker (Marker): Marker message
+            name (str): Shape name
+            static (bool, optional): Whether the shape is static. Defaults to True.
+            visualize (bool, optional): Whether to visualize the shape. Defaults to True.
+
+        Returns:
+            Shape: Shape instance
+        """
+        pass
+
     @property
     def _rotation(self) -> Rotation:
         """Return a scipy representation of the box's orientation
@@ -269,7 +285,7 @@ class Box(Shape):
             y_pos (float): y coordinate of the center of the box
             z_pos (float): z coordinate of the center of the box
             x_size (float): box size in x direction
-            y_size (float): box size in y direction
+            y_size (float): box size in y directionresizeCallback
             z_size (float): box size in z direction
             roll (float, optional): roll angle. Defaults to 0.0.
             pitch (float, optional): pitch angle. Defaults to 0.0.
@@ -389,6 +405,35 @@ class Box(Shape):
         marker.color.b = self.STATIC_COLOR[2] / 255 if self.static else self.NONSTATIC_COLOR[2] / 255
         return marker
 
+    @staticmethod
+    def from_marker(marker: Marker, name: str, static: bool = True, visualize: bool = True) -> "Box":
+        x_pos = marker.pose.position.x
+        y_pos = marker.pose.position.y
+        z_pos = marker.pose.position.z
+
+        yaw, pitch, roll = Rotation.from_quat(
+            [marker.pose.orientation.x, marker.pose.orientation.y, marker.pose.orientation.z, marker.pose.orientation.w]
+        ).as_euler("ZYX")
+
+        x_size = marker.scale.x
+        y_size = marker.scale.y
+        z_size = marker.scale.z
+
+        return Box(
+            name,
+            x_pos,
+            y_pos,
+            z_pos,
+            x_size,
+            y_size,
+            z_size,
+            roll,
+            pitch,
+            yaw,
+            static=static,
+            visualize=visualize,
+        )
+
 
 class Cylinder(Shape):
     TYPE = ShapeTypes.CYLINDER
@@ -500,6 +545,10 @@ class Cylinder(Shape):
         marker.color.g = self.STATIC_COLOR[1] / 255 if self.static else self.NONSTATIC_COLOR[1] / 255
         marker.color.b = self.STATIC_COLOR[2] / 255 if self.static else self.NONSTATIC_COLOR[2] / 255
         return marker
+    
+    @staticmethod
+    def from_marker(marker: Marker, name: str, static: bool = True, visualize: bool = True) -> "Cylinder":
+        raise NotImplementedError("Cylinder from marker not implemented")
 
 
 class Ball(Shape):
@@ -598,3 +647,7 @@ class Ball(Shape):
         marker.color.g = self.STATIC_COLOR[1] / 255 if self.static else self.NONSTATIC_COLOR[1] / 255
         marker.color.b = self.STATIC_COLOR[2] / 255 if self.static else self.NONSTATIC_COLOR[2] / 255
         return marker
+
+    @staticmethod
+    def from_marker(marker: Marker, name: str, static: bool = True, visualize: bool = True) -> "Sphere":
+        raise NotImplementedError("Ball from marker not implemented")

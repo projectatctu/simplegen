@@ -6,6 +6,7 @@ import rospy
 from .example_maps import AVAILABLE_MAPS
 
 from .map import FromFileMap
+from .map_creator import RvizMapCreator
 
 
 def parse_args():
@@ -19,6 +20,7 @@ def parse_args():
     parser.add_argument("--world_file", type=str, help="Name of the .world file to store the map")
     parser.add_argument("--ply_file", type=str, help="Name of the .ply file to store the map")
     parser.add_argument("--from_file", type=str, help="Visualize the map from a .world file", default="")
+    parser.add_argument("--creator", action="store_true", help="Run the map creator")
     return parser.parse_args()
 
 
@@ -36,6 +38,13 @@ def main():
         rospy.init_node("simplegen_rviz_visualizer")
         map.rviz_visualize()
         rospy.spin()
+
+    if args.creator:
+        rospy.init_node("simplegen_rviz_visualizer")
+        creator = RvizMapCreator()
+        rospy.spin()
+
+        map = AVAILABLE_MAPS["FromMapMap"](creator.getMapGenerator(), add_floor=True).setup()
 
     if args.store_world:
         map.save_map(args.world_file)
