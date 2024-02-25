@@ -415,9 +415,9 @@ class Box(Shape):
             [marker.pose.orientation.x, marker.pose.orientation.y, marker.pose.orientation.z, marker.pose.orientation.w]
         ).as_euler("ZYX")
 
-        x_size = marker.scale.x
-        y_size = marker.scale.y
-        z_size = marker.scale.z
+        x_size = abs(marker.scale.x)
+        y_size = abs(marker.scale.y)
+        z_size = abs(marker.scale.z)
 
         return Box(
             name,
